@@ -10,9 +10,12 @@
       0
     ]
   ],
-  "protocolId": null,
+  "protocolId": "darwinia",
   "consensusEngine": null,
-  "properties": null,
+  "properties": {
+    "tokenDecimals": 9,
+    "tokenSymbol": "RING"
+  },
   "genesis": {
     "raw": {
       "0x7b8663949bbe8a55aae637a5859efcf0081ad5558d0efb777e994752e709298c": "0x10270000000000000000000000000000",
