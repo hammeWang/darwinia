@@ -3,7 +3,7 @@
 use parity_codec::{Codec, Decode, Encode};
 use primitives::traits::{
     Bounded, CheckedAdd, CheckedSub, MaybeSerializeDebug, Member, Saturating,
-    SimpleArithmetic, StaticLookup, Zero,
+    SimpleArithmetic, StaticLookup, Zero, One
 };
 use rstd::{cmp, convert::{TryFrom, TryInto}, result};
 use rstd::prelude::*;
@@ -114,7 +114,8 @@ decl_event!(
         TokenTransfer(AccountId, AccountId, Balance),
         /// Claim Reward
         RewardClaim(AccountId, Currency),
-        WithdrawDeposit(AccountId, Currency, Moment, bool),
+
+        WithdrawDeposit(AccountId, Currency, Balance),
     }
 );
 
@@ -233,7 +234,7 @@ decl_module! {
         }
 
 
-        pub fn transfer(origin,
+        fn transfer(origin,
             dest: <T::Lookup as StaticLookup>::Source,
 			#[compact] value: T::Balance
 		) {
@@ -244,7 +245,7 @@ decl_module! {
         }
 
 
-        pub fn claim_reward(origin) {
+        fn claim_reward(origin) {
             let transactor = ensure_signed(origin)?;
             let value_can_withdraw = Self::reward_can_withdraw(&transactor);
             if !value_can_withdraw.is_zero() {
@@ -253,11 +254,42 @@ decl_module! {
                 Self::deposit_event(RawEvent::RewardClaim(transactor, value_can_withdraw));
             }
         }
+
+
+//        fn redeem(origin, index: u64) {
+//            let who = ensure_signed(origin)?;
+//            let now = <timestamp::Module<T>>::now();
+//            let index = index as usize;
+//            let mut ledger = Self::deposit_ledger(&who).ok_or("not a deposit-er")?;
+//            ensure!(index < ledger.deposit_list.len(), "out of deposit list;s bound.");
+//
+//            let mut individual_deposit = ledger.clone().deposit_list[index];
+//
+//            let mut penalty: T::Balance = 0.into();
+//            let month_in_second =  30 * 24 * 3600;
+//            let expiring_date = individual_deposit.clone().start_at + (individual_deposit.clone().month * month_in_second).into();
+//            let is_punished = expiring_date > now;
+//            if is_punished {
+//                let month_left = ((expiring_date - now) / month_in_second.into()).try_into().unwrap_or_default() as u32;
+//                penalty = Self::compute_kton_balance(month_left.max(One::one()), individual_deposit.value).unwrap();
+//
+//                let imbalance = Self::withdraw(&who, penalty * 3.into(), WithdrawReason::Transfer, ExistenceRequirement::KeepAlive)?;
+//                T::OnRemoval::on_unbalanced(imbalance);
+//            }
+//
+//
+//            ledger.total -= individual_deposit.value;
+//            individual_deposit.claimed = true;
+//            ledger.deposit_list[index] = individual_deposit;
+//            Self::update_deposit(&who, &ledger);
+//
+//            Self::deposit_event(RawEvent::WithdrawDeposit(who, individual_deposit.value, penalty));
+//        }
     }
 
-
-
 }
+
+
 
 impl<T: Trait> Module<T> {
     fn update_deposit(who: &T::AccountId, deposit: &Deposit<CurrencyOf<T>, T::Balance, T::Moment>) {

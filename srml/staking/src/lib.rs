@@ -372,7 +372,7 @@ decl_storage! {
 					};
 				}
 
-				if let (_, Some(validators)) = <Module<T>>::select_validators() {∑
+				if let (_, Some(validators)) = <Module<T>>::select_validators() {
 					<session::Validators<T>>::put(&validators);
 				}
 			});
