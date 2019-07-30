@@ -111,6 +111,8 @@ pub struct ValidatorPrefs<Balance: HasCompact> {
     /// nominators.
     #[codec(compact)]
     pub validator_payment: Balance,
+
+    pub name: Vec<u8>,
 }
 
 impl<B: Default + HasCompact + Copy> Default for ValidatorPrefs<B> {
@@ -118,6 +120,7 @@ impl<B: Default + HasCompact + Copy> Default for ValidatorPrefs<B> {
         ValidatorPrefs {
             unstake_threshold: 3,
             validator_payment: Default::default(),
+            name: [0;8].to_vec()
         }
     }
 }
@@ -486,8 +489,9 @@ decl_module! {
 		}
 
 
-		fn validate(origin, prefs: ValidatorPrefs<RewardBalanceOf<T>>) {
+		fn validate(origin, unstake_threshold: u32, validator_payment: RewardBalanceOf<T>, name: Vec<u8>) {
 			let controller = ensure_signed(origin)?;
+			let prefs = ValidatorPrefs {unstake_threshold, validator_payment, name};
 			let ledger = Self::ledger(&controller).ok_or("not a controller")?;
 			let stash = &ledger.stash;
 			ensure!(

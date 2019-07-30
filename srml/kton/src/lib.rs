@@ -79,6 +79,13 @@ pub struct Deposit<Currency, Balance, Moment> {
     pub deposit_list: Vec<IndividualDeposit<Currency, Balance, Moment>>,
 }
 
+//impl<AccountId, Balance: Copy + Saturating, Moment> Deposit<AccountId, Balance, Moment> {
+//    fn remove_individual(mut self, index: usize) {
+//        let mut total = self.total;
+//        self.deposit_list.remove(index);
+//    }
+//}
+
 type CurrencyOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
 pub type NegativeImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::NegativeImbalance;
 pub type PositiveImbalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::PositiveImbalance;

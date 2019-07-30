@@ -11,7 +11,6 @@
   "telemetryEndpoints": null,
   "protocolId": null,
   "consensusEngine": null,
-  "properties": null,
   "genesis": {
     "runtime": {
       "system": {
