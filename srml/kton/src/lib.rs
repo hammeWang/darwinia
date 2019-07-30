@@ -65,6 +65,7 @@ pub struct BalanceLock<Balance, BlockNumber> {
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct IndividualDeposit<Currency, Balance, Moment> {
+    pub id: u32,
     pub month: u32,
     pub start_at: Moment,
     pub value: Currency,
@@ -206,7 +207,7 @@ decl_module! {
 
             let kton_return = Self::compute_kton_balance(months, value).unwrap();
 
-            let individual_deposit = IndividualDeposit {month: months, start_at: now.clone(), value: value, balance: kton_return, claimed: false};
+            let individual_deposit = IndividualDeposit {id: 0, month: months, start_at: now.clone(), value: value, balance: kton_return, claimed: false};
             let deposit = Deposit {total: value, deposit_list: vec![individual_deposit]};
 
             Self::update_deposit(&transactor, &deposit);
@@ -230,7 +231,8 @@ decl_module! {
                  deposit.total += extra;
 
                  let kton_return = Self::compute_kton_balance(months, extra).unwrap();
-                 let individual_deposit = IndividualDeposit {month: months, start_at: now.clone(), value: extra.clone(), balance: kton_return, claimed: false};
+                 let index = deposit.deposit_list.len();
+                 let individual_deposit = IndividualDeposit {id: index as u32, month: months, start_at: now.clone(), value: extra.clone(), balance: kton_return, claimed: false};
                  deposit.deposit_list.push(individual_deposit);
                  Self::update_deposit(&transactor, &deposit);
 
