@@ -30,6 +30,9 @@ pub use node_runtime::GenesisConfig;
 use primitives::{crypto::UncheckedInto, ed25519, Pair, sr25519};
 use substrate_service;
 use substrate_telemetry::TelemetryEndpoints;
+use substrate_service::Properties;
+use serde_json::Number;
+use serde_json::de::ParserNumber;
 
 const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
@@ -126,10 +129,9 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
         }),
         staking: Some(StakingConfig {
             current_era: 0,
-            current_era_total_reward: 0,
+            current_era_total_reward: 80_000_000 * COIN / 63720,
             offline_slash: Perbill::from_parts(1_000_000),
-            session_reward: Perbill::from_parts(2_065),
-            current_session_reward: 0,
+            session_reward: Perbill::from_percent(90),
             validator_count: 7,
             offline_slash_grace: 4,
             minimum_validator_count: 4,
@@ -255,18 +257,17 @@ pub fn testnet_genesis(
         staking: Some(StakingConfig {
             current_era: 0,
             // TODO: ready for hacking
-            current_era_total_reward: 80_000_000 * COIN,
+            current_era_total_reward: 80_000_000 * COIN / 63720,
             minimum_validator_count: 1,
             validator_count: 3,
-            offline_slash: Perbill::from_percent(90),
-            session_reward: Perbill::zero(),
-            current_session_reward: 0,
-            offline_slash_grace: 2,
+            offline_slash: Perbill::from_parts(1_000_000),
+            session_reward: Perbill::from_percent(90),
+            offline_slash_grace: 4,
             stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
             invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
         }),
         timestamp: Some(TimestampConfig {
-            minimum_period: 2,                    // 2*2=4 second block time.
+            minimum_period: 3,                    // 3*2=6 second block time.
         }),
         contracts: Some(ContractsConfig {
             current_schedule: contracts::Schedule {
@@ -364,18 +365,17 @@ pub fn crayfish_testnet_genesis(
         staking: Some(StakingConfig {
             current_era: 0,
             // TODO: ready for hacking
-            current_era_total_reward: 105820105820105,
+            current_era_total_reward: 80_000_000 * COIN / 63720,
             minimum_validator_count: 1,
             validator_count: 3,
-            offline_slash: Perbill::from_percent(90),
-            session_reward: Perbill::zero(),
-            current_session_reward: 0,
+            offline_slash: Perbill::from_parts(1_000_000),
+            session_reward: Perbill::from_percent(90),
             offline_slash_grace: 2,
             stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
             invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
         }),
         timestamp: Some(TimestampConfig {
-            minimum_period: 2,                    // 2*2=4 second block time.
+            minimum_period: 3,                    // 3*2=6 second block time.
         }),
         contracts: Some(ContractsConfig {
             current_schedule: contracts::Schedule {
@@ -414,14 +414,21 @@ fn local_testnet_genesis() -> GenesisConfig {
     )
 }
 
+fn token_properties() -> Option<Properties> {
+    let mut properties = Properties::new();
+    properties.insert("tokenDecimals".to_owned(), serde_json::Value::Number(Number::from(ParserNumber::U64(9))));
+    properties.insert("tokenSymbol".to_owned(), serde_json::Value::String("RING".to_owned()));
+    Some(properties)
+}
+
 /// Local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
-    ChainSpec::from_genesis("Local Testnet", "local_testnet", local_testnet_genesis, vec![], None, None, None, None)
+    ChainSpec::from_genesis("Local Testnet", "local_testnet", local_testnet_genesis, vec![], None, None, None, token_properties())
 }
 
 /// c￿rayfish testnet config (multivalidator Alice + Bob)
 pub fn crayfish_testnet_config() -> ChainSpec {
-    ChainSpec::from_genesis("Crayfish Testnet", "crayfish_testnet", crayfish_config_genesis, vec![], None, None, None, None)
+    ChainSpec::from_genesis("Crayfish Testnet", "crayfish_testnet", crayfish_config_genesis, vec![], None, None, None, token_properties())
 }
 
 #[cfg(test)]
